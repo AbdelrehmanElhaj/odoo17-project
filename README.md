@@ -83,3 +83,4 @@ $(bash .compose) ps
 - Database Manager: http://localhost:8069/web/database/manager
 - Docs: https://www.odoo.com/documentation/17.0/
 # Odoo 17 Dev — Tue Apr 28 20:52:40 UTC 2026
+# test Tue Apr 28 20:58:30 UTC 2026
