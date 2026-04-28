@@ -18,10 +18,24 @@ jobs:
           USER: ${{ secrets.EC2_USER }}
           KEY:  ${{ secrets.EC2_SSH_KEY }}
         run: |
+          # Debug — check secrets are set
+          echo "HOST is set: $([ -n "$HOST" ] && echo YES || echo NO)"
+          echo "USER is set: $([ -n "$USER" ] && echo YES || echo NO)"
+          echo "KEY is set: $([ -n "$KEY" ] && echo YES || echo NO)"
+          echo "KEY length: ${#KEY}"
+
+          # Write key
           echo "$KEY" > /tmp/deploy_key.pem
           chmod 600 /tmp/deploy_key.pem
-          ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key.pem $USER@$HOST \
-            "bash ~/odoo17/deploy.sh"
+
+          # Show first line of key
+          head -1 /tmp/deploy_key.pem
+
+          ssh -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=10 \
+              -i /tmp/deploy_key.pem \
+              $USER@$HOST \
+              "bash ~/odoo17/deploy.sh"
 
       - name: Health check
         env:
