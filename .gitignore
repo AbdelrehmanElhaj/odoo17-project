@@ -1,0 +1,13 @@
+.env
+addons/*
+!addons/.gitkeep
+config/*.backup
+*.pyc
+__pycache__/
+backups/*.sql
+backups/*.gz
+*.log
+.vscode/
+.idea/
+.DS_Store
+.compose
