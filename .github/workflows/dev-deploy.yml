@@ -1,0 +1,40 @@
+name: Dev Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to dev EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        env:
+          HOST: ${{ secrets.DEV_EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+          KEY:  ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          echo "$KEY" > /tmp/deploy_key.pem
+          chmod 600 /tmp/deploy_key.pem
+          ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key.pem $USER@$HOST \
+            "bash ~/odoo17/deploy.sh"
+
+      - name: Health check
+        env:
+          HOST: ${{ secrets.DEV_EC2_HOST }}
+        run: |
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "http://$HOST:8069/web/health" || echo "000")
+          echo "Health check: $HTTP_CODE"
+          [[ "$HTTP_CODE" == "200" ]] || exit 1
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Deploy ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Odoo:** http://${{ secrets.DEV_EC2_HOST }}:8069" >> $GITHUB_STEP_SUMMARY
